@@ -4,7 +4,7 @@ import config from 'config';
 import { initDB } from './config/db';
 
 const startServer = async () => {
-    const PORT: number = config.get('server.port') ?? 5502;
+    const PORT: number = config.get('server.port') ?? 5503;
     try {
         await initDB();
         logger.info('Database connected');
