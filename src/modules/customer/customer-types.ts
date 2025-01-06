@@ -1,3 +1,5 @@
+import { AuthRequest } from '../../common/types';
+
 export interface Address {
     text: string;
     isDefault: boolean;
@@ -16,4 +18,13 @@ export interface CustomerData {
     firstName: string;
     lastName: string;
     email: string;
+}
+
+export interface AddAddressRequest extends AuthRequest {
+    params: {
+        id: string;
+    };
+    body: {
+        address: Address;
+    };
 }

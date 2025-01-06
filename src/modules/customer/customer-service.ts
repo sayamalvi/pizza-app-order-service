@@ -1,6 +1,6 @@
 import { Logger } from 'winston';
 import customerModel from './customer-model';
-import { CustomerData } from './customer-types';
+import { Address, CustomerData } from './customer-types';
 
 export class CustomerService {
     constructor(private readonly logger: Logger) {}
@@ -15,5 +15,21 @@ export class CustomerService {
         }
 
         return customer;
+    }
+
+    async addAddress(id: string, userId: string, address: Address) {
+        const updatedCustomerDocument = await customerModel.findOneAndUpdate(
+            { _id: id, userId: userId },
+            {
+                $push: {
+                    addresses: {
+                        text: address,
+                        isDefault: false,
+                    },
+                },
+            },
+            { new: true },
+        );
+        return updatedCustomerDocument;
     }
 }
