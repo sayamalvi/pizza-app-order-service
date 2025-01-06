@@ -10,6 +10,6 @@ const couponService = new CouponService();
 const couponController = new CouponController(logger, couponService);
 
 router.post('/', authenticate, asyncWrapper(couponController.create));
-router.post('/verify', authenticate, asyncWrapper(couponController.create));
+router.post('/verify', authenticate, asyncWrapper(couponController.verify));
 
 export default router;

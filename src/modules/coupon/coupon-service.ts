@@ -6,21 +6,21 @@ export class CouponService {
         code: string,
         validUpto: Date,
         discount: number,
-        tenantId: number,
+        tenant: number,
     ) {
         const coupon = await couponModel.create({
             title,
             code,
             discount,
             validUpto,
-            tenantId,
+            tenant,
         });
 
         return coupon;
     }
 
-    async verifyCoupon(code: string, tenantId: number) {
-        const coupon = await couponModel.findOne({ code, tenantId });
+    async verifyCoupon(code: string, tenant: number) {
+        const coupon = await couponModel.findOne({ code, tenant });
         return coupon
     }
 }

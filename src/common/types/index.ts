@@ -1,4 +1,4 @@
-import { Request } from 'express';
+import { Request, Response } from 'express';
 
 export type AuthCookie = {
     accessToken: string;
@@ -15,3 +15,7 @@ export interface AuthRequest extends Request {
         email: string;
     };
 }
+
+// export interface ResponseModel extends Response {
+
+// }

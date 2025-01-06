@@ -6,7 +6,7 @@ export const asyncWrapper = <
     Res extends Response = Response,
     Next extends NextFunction = NextFunction,
 >(
-    requestHandler: (req: Req, res: Res, next: Next) => Promise<void>,
+    requestHandler: (req: Req, res: Res, next: Next) => Promise<void | Res>,
 ): RequestHandler => {
     return async (req: Request, res: Response, next: NextFunction) => {
         Promise.resolve(

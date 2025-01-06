@@ -36,6 +36,7 @@ export class CouponController {
         const couponDate = new Date(coupon.validUpto);
 
         if (currentDate <= couponDate) {
+            this.logger.info(`Coupon ${coupon.code} verified`);
             return res.json({ valid: true, discount: coupon.discount });
         }
 

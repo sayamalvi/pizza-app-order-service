@@ -1,3 +1,4 @@
+import { AuthRequest } from '../../common/types';
 export interface Coupon {
     id: string;
     title: string;
@@ -9,7 +10,7 @@ export interface Coupon {
     updatedAt: Date;
 }
 
-export interface CreateCouponRequest {
+export interface CreateCouponRequest extends AuthRequest {
     body: {
         title: string;
         code: string;
@@ -19,7 +20,7 @@ export interface CreateCouponRequest {
     };
 }
 
-export interface VerifyCouponRequest {
+export interface VerifyCouponRequest extends AuthRequest {
     body: {
         code: string;
         tenant: number;
