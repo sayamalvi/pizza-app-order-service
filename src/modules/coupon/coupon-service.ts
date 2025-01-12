@@ -19,8 +19,8 @@ export class CouponService {
         return coupon;
     }
 
-    async verifyCoupon(code: string, tenant: number) {
-        const coupon = await couponModel.findOne({ code, tenant });
-        return coupon
+    async verifyCoupon(code: string) {
+        const coupon = await couponModel.findOne({ code });
+        return coupon;
     }
 }

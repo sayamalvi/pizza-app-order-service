@@ -23,6 +23,5 @@ export interface CreateCouponRequest extends AuthRequest {
 export interface VerifyCouponRequest extends AuthRequest {
     body: {
         code: string;
-        tenant: number;
     };
 }

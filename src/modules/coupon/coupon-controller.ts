@@ -25,8 +25,8 @@ export class CouponController {
         res: Response,
         next: NextFunction,
     ) => {
-        const { code, tenant } = req.body;
-        const coupon = await this.couponService.verifyCoupon(code, tenant);
+        const { code } = req.body;
+        const coupon = await this.couponService.verifyCoupon(code);
         if (!coupon) {
             const error = createHttpError(400, 'Coupon does not exists');
             return next(error);
