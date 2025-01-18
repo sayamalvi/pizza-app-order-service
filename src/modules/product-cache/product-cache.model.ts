@@ -1,0 +1,30 @@
+import mongoose from 'mongoose';
+import { ProductPricingCache } from '../../common/types';
+
+
+const priceSchema = new mongoose.Schema({
+    priceType: {
+        type: String,
+        enum: ['base', 'additional'],
+    },
+    availableOptions: {
+        type: Object,
+        of: Number,
+    },
+});
+const productCacheSchema = new mongoose.Schema<ProductPricingCache>({
+    productId: {
+        type: String,
+        required: true,
+    },
+    priceConfiguration: {
+        type: Object,
+        of: priceSchema,
+    },
+});
+
+export default mongoose.model(
+    'ProductPricingCache',
+    productCacheSchema,
+    'productCache',
+);

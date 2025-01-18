@@ -19,3 +19,18 @@ export interface AuthRequest extends Request {
 // export interface ResponseModel extends Response {
 
 // }
+
+export interface PriceConfiguration {
+    priceType: 'base' | 'additional';
+    availableOptions: {
+        [key: string]: number;
+    };
+}
+export interface ProductPricingCache {
+    productId: string;
+    priceConfiguration: PriceConfiguration;
+}
+export interface ProductMessage {
+    id: string;
+    priceConfiguration: PriceConfiguration;
+}
