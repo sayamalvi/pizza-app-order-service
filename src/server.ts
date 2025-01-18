@@ -13,7 +13,7 @@ const startServer = async () => {
 
         broker = createMessageBroker();
         await broker.connnectConsumer();
-        await broker.consumeMessage(['product'], false);
+        await broker.consumeMessage(['product', 'topping'], false);
 
         logger.info('Database connected');
         app.listen(PORT, () => logger.info(`Listening on port ${PORT}`));
