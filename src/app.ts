@@ -5,6 +5,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import customerRouter from './modules/customer/customer-router';
 import couponRouter from './modules/coupon/coupon-router';
+import orderRouter from './modules/order/order-router';
 
 const app = express();
 const ALLOWED_DOMAINS = [
@@ -22,6 +23,7 @@ app.get('/', (req: Request, res: Response) => {
 
 app.use('/customer', customerRouter);
 app.use('/coupons', couponRouter);
+app.use('/orders', orderRouter);
 
 app.use(globalErrorHandler);
 
