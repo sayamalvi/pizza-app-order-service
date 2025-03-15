@@ -27,7 +27,10 @@ export class OrderController {
         const discountAmount = Math.round(
             (totalPrice * discountPercentage) / 100,
         );
-        return res.json({ success: true, totalPrice, discountAmount });
+        const priceAfterDiscount = totalPrice - discountAmount;
+        const TAXES_PERCENT = 18;
+        const taxes = Math.round((priceAfterDiscount * TAXES_PERCENT) / 100);
+        return res.json({ success: true, totalPrice, discountAmount, taxes });
     };
 
     private readonly getCurrentToppingPrice = (
