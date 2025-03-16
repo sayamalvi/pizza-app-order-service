@@ -30,7 +30,10 @@ export class OrderController {
         const priceAfterDiscount = totalPrice - discountAmount;
         const TAXES_PERCENT = 18;
         const taxes = Math.round((priceAfterDiscount * TAXES_PERCENT) / 100);
-        return res.json({ success: true, totalPrice, discountAmount, taxes });
+        // Store in db for each tenant or calculate
+        const DELIVERY_CHARGES = 100;
+        const finalTotal = priceAfterDiscount + taxes + DELIVERY_CHARGES;
+        return res.json({ success: true, totalPrice, discountAmount, taxes, finalTotal });
     };
 
     private readonly getCurrentToppingPrice = (
