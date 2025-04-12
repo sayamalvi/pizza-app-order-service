@@ -16,6 +16,10 @@ export interface AuthRequest extends Request {
     };
 }
 
+export enum PriceType {
+    BASE = 'base',
+    ADDITIONAL = 'additional',
+}
 export interface PriceConfiguration {
     priceType: 'base' | 'additional';
     availableOptions: {
@@ -67,12 +71,12 @@ export type Topping = {
 };
 
 export interface CartItem
-  extends Pick<Product, "_id" | "name" | "image" | "priceConfiguration"> {
-  chosenConfiguration: {
-    priceConfiguration: {
-      [key: string]: string;
+    extends Pick<Product, '_id' | 'name' | 'image' | 'priceConfiguration'> {
+    chosenConfiguration: {
+        priceConfiguration: {
+            [key: string]: string;
+        };
+        selectedToppings: Topping[];
     };
-    selectedToppings: Topping[];
-  };
-  qty: number;
+    qty: number;
 }

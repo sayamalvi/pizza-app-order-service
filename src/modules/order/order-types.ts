@@ -12,7 +12,7 @@ export interface CreateOrderRequest {
         customerId: string;
         paymentMode: string;
     };
-}
+} 
 
 export enum PaymentMode {
     CARD = 'card',

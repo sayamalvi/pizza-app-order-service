@@ -5,19 +5,26 @@ import {
     Topping,
     ToppingPriceCache,
 } from '../../common/types';
-import { CreateOrderRequest } from './order-types';
+import { CreateOrderRequest, OrderStatus, PaymentStatus } from './order-types';
 import productCacheModel from '../product-cache/product-cache.model';
 import toppingCacheModel from '../topping-cache/topping-cache.model';
 import couponModel from '../coupon/coupon-model';
+import orderModel from './order-model';
 
 export class OrderController {
     readonly create = async (req: CreateOrderRequest, res: Response) => {
         // TODO: validation
-        const { cart } = req.body;
+        const {
+            cart,
+            couponCode,
+            tenant: tenantId,
+            paymentMode,
+            customerId,
+            comment,
+            address,
+        } = req.body;
         const totalPrice = await this.calculateTotal(cart);
         let discountPercentage = 0;
-        const couponCode = req.body.couponCode;
-        const tenantId = req.body.tenant;
         if (couponCode) {
             discountPercentage = await this.getDiscountPercentage(
                 couponCode,
@@ -33,7 +40,26 @@ export class OrderController {
         // Store in db for each tenant or calculate
         const DELIVERY_CHARGES = 100;
         const finalTotal = priceAfterDiscount + taxes + DELIVERY_CHARGES;
-        return res.json({ success: true, totalPrice, discountAmount, taxes, finalTotal });
+
+        // Create an order
+        const newOrder = await orderModel.create({
+            cart,
+            couponCode,
+            tenantId,
+            paymentMode,
+            customerId,
+            comment,
+            address,
+            deliveryCharges: DELIVERY_CHARGES,
+            discount: discountAmount,
+            taxes,
+            total: finalTotal,
+            orderStatus: OrderStatus.RECEIVED,
+            paymentStatus: PaymentStatus.PENDING,
+        });
+        return res.json({
+            newOrder,
+        });
     };
 
     private readonly getCurrentToppingPrice = (
@@ -72,10 +98,11 @@ export class OrderController {
         const productTotal = Object.entries(
             item.chosenConfiguration.priceConfiguration,
         ).reduce((acc, [key, value]) => {
-            const price =
-                cachedProductPrice.priceConfiguration[key].availableOptions[
-                    value
-                ];
+            const configOption = cachedProductPrice.priceConfiguration[key];
+            if (!configOption?.availableOptions?.[value]) {
+                throw new Error(`Invalid price configuration for key: ${key}`);
+            }
+            const price = configOption.availableOptions[value];
             return acc + price;
         }, 0);
 
