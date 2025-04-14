@@ -1,8 +1,6 @@
 import mongoose from 'mongoose';
-import { CartItem } from '../../common/types/index';
-
-
-export interface CreateOrderRequest {
+import { AuthRequest, CartItem } from '../../common/types/index';
+export interface CreateOrderRequest extends AuthRequest {
     body: {
         cart: CartItem[];
         couponCode: string;
@@ -12,7 +10,10 @@ export interface CreateOrderRequest {
         customerId: string;
         paymentMode: string;
     };
-} 
+    headers: {
+        'idempotency-key': string;
+    };
+}
 
 export enum PaymentMode {
     CARD = 'card',

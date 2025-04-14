@@ -1,4 +1,6 @@
-import { Response } from 'express';
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+import { NextFunction, Response } from 'express';
 import {
     CartItem,
     ProductPricingCache,
@@ -10,9 +12,16 @@ import productCacheModel from '../product-cache/product-cache.model';
 import toppingCacheModel from '../topping-cache/topping-cache.model';
 import couponModel from '../coupon/coupon-model';
 import orderModel from './order-model';
+import mongoose from 'mongoose';
+import idempotencyModel from '../idempotency/idempotency-model';
+import createHttpError from 'http-errors';
 
 export class OrderController {
-    readonly create = async (req: CreateOrderRequest, res: Response) => {
+    readonly create = async (
+        req: CreateOrderRequest,
+        res: Response,
+        next: NextFunction,
+    ) => {
         // TODO: validation
         const {
             cart,
@@ -23,40 +32,83 @@ export class OrderController {
             comment,
             address,
         } = req.body;
+
+        const idempotencyKey = req.headers['idempotency-key'];
+
+        const idempotency = await idempotencyModel.findOne({
+            key: idempotencyKey,
+        });
+
+        let newOrder = idempotency ? [idempotency.response] : [];
+
         const totalPrice = await this.calculateTotal(cart);
         let discountPercentage = 0;
+
         if (couponCode) {
             discountPercentage = await this.getDiscountPercentage(
                 couponCode,
                 tenantId,
             );
         }
+
         const discountAmount = Math.round(
             (totalPrice * discountPercentage) / 100,
         );
+
         const priceAfterDiscount = totalPrice - discountAmount;
         const TAXES_PERCENT = 18;
         const taxes = Math.round((priceAfterDiscount * TAXES_PERCENT) / 100);
+
         // Store in db for each tenant or calculate
         const DELIVERY_CHARGES = 100;
         const finalTotal = priceAfterDiscount + taxes + DELIVERY_CHARGES;
 
-        // Create an order
-        const newOrder = await orderModel.create({
-            cart,
-            couponCode,
-            tenantId,
-            paymentMode,
-            customerId,
-            comment,
-            address,
-            deliveryCharges: DELIVERY_CHARGES,
-            discount: discountAmount,
-            taxes,
-            total: finalTotal,
-            orderStatus: OrderStatus.RECEIVED,
-            paymentStatus: PaymentStatus.PENDING,
-        });
+        if (!idempotency) {
+            const session = await mongoose.startSession();
+            session.startTransaction();
+
+            try {
+                // Create an order
+                newOrder = await orderModel.create(
+                    [
+                        {
+                            cart,
+                            couponCode,
+                            tenantId,
+                            paymentMode,
+                            customerId,
+                            comment,
+                            address,
+                            deliveryCharges: DELIVERY_CHARGES,
+                            discount: discountAmount,
+                            taxes,
+                            total: finalTotal,
+                            orderStatus: OrderStatus.RECEIVED,
+                            paymentStatus: PaymentStatus.PENDING,
+                        },
+                    ],
+                    { session },
+                );
+
+                await idempotencyModel.create(
+                    [{ key: idempotencyKey, response: newOrder?.[0] }],
+                    { session },
+                );
+
+                await session.commitTransaction();
+            } catch (error) {
+                await session.abortTransaction();
+                await session.endSession();
+                if (error instanceof Error) {
+                    return next(createHttpError(500, error.message));
+                }
+                return next(createHttpError(500, 'Internal Server Error'));
+            } finally {
+                await session.endSession();
+            }
+
+            // Process Payment
+        }
         return res.json({
             newOrder,
         });
