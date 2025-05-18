@@ -15,8 +15,10 @@ import orderModel from './order-model';
 import mongoose from 'mongoose';
 import idempotencyModel from '../idempotency/idempotency-model';
 import createHttpError from 'http-errors';
+import { PaymentGW } from '../payment/payment-types';
 
 export class OrderController {
+    constructor(private paymentGW: PaymentGW) {}
     readonly create = async (
         req: CreateOrderRequest,
         res: Response,
@@ -108,10 +110,19 @@ export class OrderController {
             }
 
             // Process Payment
+            // todo: error handling, logging
+            const paymentSession = await this.paymentGW.createSession({
+                amount: finalTotal,
+                orderId: newOrder[0]._id.toString(),
+                tenantId: tenantId,
+                currency: 'inr',
+                idempotencyKey: idempotencyKey,
+            });
+            // todo: update order document -> paymentId -> sessionId
+            return res.json({
+                paymentUrl: paymentSession.paymentUrl,
+            });
         }
-        return res.json({
-            newOrder,
-        });
     };
 
     private readonly getCurrentToppingPrice = (
